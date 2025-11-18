@@ -2,6 +2,7 @@
 using namespace std;
 
 const int MAX_DATA = 500;
+const string DATA_FILE = "monke_data.txt";
 
 // Data arrays
 string kategoriArr[MAX_DATA];
@@ -23,6 +24,54 @@ bool validNominal(const string &s);
 bool validKategori(const string &s);
 int  tanggalToKey(const string &t);
 string toLowerStr(const string &s);
+
+// --- File Management Functions ---
+void muatData();
+void simpanData();
+
+// ---------- File Management ----------
+void muatData() {
+    ifstream file(DATA_FILE);
+    if (!file.is_open()) {
+        // File belum ada, tidak masalah
+        return;
+    }
+
+    jumlahData = 0;
+    string line;
+    
+    while (getline(file, line) && jumlahData < MAX_DATA) {
+        // Format: kategori|nominal|tanggal
+        size_t pos1 = line.find('|');
+        size_t pos2 = line.rfind('|');
+        
+        if (pos1 != string::npos && pos2 != string::npos && pos1 != pos2) {
+            kategoriArr[jumlahData] = line.substr(0, pos1);
+            nominalArr[jumlahData] = stoi(line.substr(pos1 + 1, pos2 - pos1 - 1));
+            tanggalArr[jumlahData] = line.substr(pos2 + 1);
+            jumlahData++;
+        }
+    }
+    
+    file.close();
+    cout << "Data berhasil dimuat! Total: " << jumlahData << " pengeluaran.\n";
+}
+
+void simpanData() {
+    ofstream file(DATA_FILE);
+    if (!file.is_open()) {
+        cout << "Gagal menyimpan data!\n";
+        return;
+    }
+
+    for (int i = 0; i < jumlahData; i++) {
+        file << kategoriArr[i] << "|" 
+             << nominalArr[i] << "|" 
+             << tanggalArr[i] << "\n";
+    }
+    
+    file.close();
+}
 
 // ---------- Utility ----------
 string toLowerStr(const string &s) {
@@ -90,7 +139,7 @@ void mainMenu() {
     while (true) {
         cout << "\n=== MonKe - Money Tracker ===\n";
         cout << "1. Tambah Pengeluaran\n";
-        cout << "2. Tampil Pengeluaran (Terbaru → Terlama)\n";
+        cout << "2. Tampil Pengeluaran (Terbaru Sampai Terlama)\n";
         cout << "3. Total Pengeluaran (Rentang Tanggal)\n";
         cout << "4. Cari Pengeluaran\n";
         cout << "5. Sort Pengeluaran\n";
@@ -108,7 +157,8 @@ void mainMenu() {
         else if (pilih == "5") sortPengeluaran();
         else if (pilih == "6") hapusPengeluaran();
         else if (pilih == "7") {
-            cout << "\nTerima kasih telah menggunakan MonKe!\n";
+            simpanData();
+            cout << "\nData tersimpan! Terima kasih telah menggunakan MonKe!\n";
             break;
         } 
         else cout << "Pilihan tidak valid!\n";
@@ -150,13 +200,14 @@ void tambahPengeluaran() {
     tanggalArr[jumlahData] = t;
     jumlahData++;
 
-    cout << "Pengeluaran berhasil ditambahkan!\n";
+    simpanData(); // Auto-save setelah tambah data
+    cout << "Pengeluaran berhasil ditambahkan dan tersimpan!\n";
 }
 
 
 // ================== MENU 2 ===================
 void tampilPengeluaran() {
-    cout << "\n--- Daftar Pengeluaran (Terbaru → Terlama) ---\n";
+    cout << "\n--- Daftar Pengeluaran (Terbaru Sampai Terlama) ---\n";
     if (jumlahData == 0) {
         cout << "Belum ada data.\n";
         return;
@@ -295,7 +346,8 @@ void sortPengeluaran() {
         }
     }
 
-    cout << "Sort selesai!\n";
+    simpanData(); // Auto-save setelah sort
+    cout << "Sort selesai dan tersimpan!\n";
 
     tampilHeader();
     for (int i = 0; i < jumlahData; i++) {
@@ -341,7 +393,8 @@ void hapusPengeluaran() {
     }
 
     jumlahData--;
-    cout << "Data terhapus!\n";
+    simpanData(); // Auto-save setelah hapus data
+    cout << "Data terhapus dan tersimpan!\n";
 }
 
 
@@ -349,6 +402,10 @@ void hapusPengeluaran() {
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(&cout);
+
+    cout << "=== MonKe - Money Tracker ===\n";
+    cout << "Memuat data...\n";
+    muatData();
 
     mainMenu();
     return 0;
