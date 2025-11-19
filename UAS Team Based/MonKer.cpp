@@ -415,7 +415,7 @@ void sortPengeluaran() {
 
         if (pilihSort == "1" || pilihSort == "2" || pilihSort == "3") break;
 
-        cout << "✖ Pilihan tidak valid! Silakan pilih 1/2/3.\n";
+        cout << "Pilihan tidak valid! Silakan pilih 1/2/3.\n";
     }
 
 
