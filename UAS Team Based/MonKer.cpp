@@ -173,26 +173,36 @@ void tambahPengeluaran() {
         return;
     }
 
+    string kat, sNom, t;
+
     cout << "\n--- Tambah Pengeluaran ---\n";
-    cout << "Kategori: ";
-    string kat; getline(cin, kat);
-    if (!validKategori(kat)) {
+
+    // Input Kategori
+    while (true){
+        cout << "Kategori: ";
+        getline(cin, kat);
+
+        if (validKategori(kat)) break; 
         cout << "Kategori tidak valid.\n";
-        return;
+        
     }
 
-    cout << "Nominal: ";
-    string sNom; getline(cin, sNom);
-    if (!validNominal(sNom)) {
+    // Input Nominal
+    while (true){
+        cout << "Nominal: ";
+        getline(cin, sNom);
+
+        if (validNominal(sNom)) break; 
         cout << "Nominal tidak valid.\n";
-        return;
     }
 
-    cout << "Tanggal (dd-mm-yyyy): ";
-    string t; getline(cin, t);
-    if (!validTanggal(t)) {
+    // Input Tanggal
+    while (true){
+        cout << "Tanggal (dd-mm-yyyy): ";
+        getline(cin, t);
+
+        if (validTanggal(t)) break; 
         cout << "Tanggal tidak valid.\n";
-        return;
     }
 
     kategoriArr[jumlahData] = kat;
@@ -227,29 +237,50 @@ void tampilPengeluaran() {
 
 // ================== MENU 3 ===================
 void totalPengeluaranRentang() {
-    cout << "\n--- Total Pengeluaran (Rentang) ---\n";
+    if (jumlahData == 0) {
+        cout << "Belum ada data pengeluaran.\n";
+        return;
+    }
 
-    cout << "Tanggal Awal: ";
-    string a; getline(cin, a);
-    if (!validTanggal(a)) { cout << "Tanggal salah.\n"; return; }
+    cout << "\n--- Total Pengeluaran (Rentang Tanggal) ---\n";
 
-    cout << "Tanggal Akhir: ";
-    string b; getline(cin, b);
-    if (!validTanggal(b)) { cout << "Tanggal salah.\n"; return; }
+    string tAwal, tAkhir;
 
-    int kA = tanggalToKey(a);
-    int kB = tanggalToKey(b);
-    if (kA > kB) swap(kA, kB);
+    // ---------------- INPUT TANGGAL AWAL ----------------
+    while (true) {
+        cout << "Tanggal Awal (dd-mm-yyyy): ";
+        getline(cin, tAwal);
 
-    int total = 0;
+        if (validTanggal(tAwal)) break;
+        cout << "Tanggal awal tidak valid! Format harus dd-mm-yyyy.\n";
+    }
 
+    // ---------------- INPUT TANGGAL AKHIR ----------------
+    while (true) {
+        cout << "Tanggal Akhir (dd-mm-yyyy): ";
+        getline(cin, tAkhir);
+
+        if (validTanggal(tAkhir)) break;
+        cout << "Tanggal akhir tidak valid! Format harus dd-mm-yyyy.\n";
+    }
+
+    // Convert to comparable key
+    int keyAwal = tanggalToKey(tAwal);
+    int keyAkhir = tanggalToKey(tAkhir);
+
+    if (keyAwal > keyAkhir) swap(keyAwal, keyAkhir);
+
+    // ---------------- HITUNG TOTAL ----------------
+    int total = 0, nomor = 1;
+
+    cout << "\nData dalam rentang:\n";
     tampilHeader();
-    int no = 1;
 
     for (int i = 0; i < jumlahData; i++) {
-        int key = tanggalToKey(tanggalArr[i]);
-        if (key >= kA && key <= kB) {
-            cout << setw(4) << no++ << " | "
+        int keyNow = tanggalToKey(tanggalArr[i]);
+
+        if (keyNow >= keyAwal && keyNow <= keyAkhir) {
+            cout << setw(4) << nomor++ << " | "
                  << left << setw(20) << kategoriArr[i] << " | "
                  << right << setw(10) << nominalArr[i] << " | "
                  << " " << tanggalArr[i] << "\n";
@@ -260,25 +291,54 @@ void totalPengeluaranRentang() {
     cout << "\nTotal Pengeluaran Periode: Rp " << total << "\n";
 }
 
-
 // ================== MENU 4 ===================
 void cariPengeluaran() {
+    if (jumlahData == 0) {
+        cout << "Belum ada data.\n";
+        return;
+    }
+
     cout << "\n--- Cari Pengeluaran ---\n";
-    cout << "Cari berdasarkan:\n1. Kategori\n2. Tanggal\nPilih: ";
 
-    string p; getline(cin, p);
+    string pilih;
 
-    if (p == "1") {
-        cout << "Masukkan kategori: ";
-        string key; getline(cin, key);
+    // ---------------- PILIH MENU VALID ----------------
+    while (true) {
+        cout << "Cari berdasarkan:\n";
+        cout << "1. Kategori\n";
+        cout << "2. Tanggal (dd-mm-yyyy)\n";
+        cout << "Pilih (1/2): ";
+        getline(cin, pilih);
 
-        key = toLowerStr(key);
+        if (pilih == "1" || pilih == "2") break;
+
+        cout << "Pilihan tidak valid! Silakan pilih 1 atau 2.\n";
+    }
+
+    // CARI BERDASARKAN KATEGORI 
+    if (pilih == "1") {
+        string key;
+
+        // Input kategori valid
+        while (true) {
+            cout << "Masukkan kategori: ";
+            getline(cin, key);
+
+            if (validKategori(key)) break;
+
+            cout << "Kategori tidak valid! Hanya huruf dan spasi.\n";
+        }
+
+        // Lowercase untuk pencocokan
+        string keyL = toLowerStr(key);
+
+        cout << "\nHasil pencarian untuk kategori \"" << key << "\" :\n";
 
         tampilHeader();
         int no = 1;
 
         for (int i = 0; i < jumlahData; i++) {
-            if (toLowerStr(kategoriArr[i]) == key) {
+            if (toLowerStr(kategoriArr[i]) == keyL) {
                 cout << setw(4) << no++ << " | "
                      << left << setw(20) << kategoriArr[i] << " | "
                      << right << setw(10) << nominalArr[i] << " | "
@@ -286,23 +346,49 @@ void cariPengeluaran() {
             }
         }
 
-    } else if (p == "2") {
-        cout << "Tanggal (dd-mm-yyyy): ";
-        string t; getline(cin, t);
+        // Jika tidak ada data
+        if (no == 1) {
+            cout << "Tidak ada data dengan kategori tersebut.\n";
+        }
+
+        return;
+    }
+
+    // CARI BERDASARKAN TANGGAL
+    else if (pilih == "2") {
+        string tgl;
+
+        // Input tanggal valid
+        while (true) {
+            cout << "Masukkan tanggal (dd-mm-yyyy): ";
+            getline(cin, tgl);
+
+            if (validTanggal(tgl)) break;
+            cout << "Format tanggal salah! Contoh: 05-11-2024\n";
+        }
+
+        cout << "\nHasil pencarian tanggal " << tgl << ":\n";
 
         tampilHeader();
         int no = 1;
 
         for (int i = 0; i < jumlahData; i++) {
-            if (tanggalArr[i] == t) {
+            if (tanggalArr[i] == tgl) {
                 cout << setw(4) << no++ << " | "
                      << left << setw(20) << kategoriArr[i] << " | "
                      << right << setw(10) << nominalArr[i] << " | "
                      << " " << tanggalArr[i] << "\n";
             }
         }
+
+        if (no == 1) {
+            cout << "Tidak ada data pada tanggal tersebut.\n";
+        }
+
+        return;
     }
 }
+
 
 
 // ================== MENU 5 ===================
@@ -312,33 +398,76 @@ void sortPengeluaran() {
         return;
     }
 
-    cout << "\nSort berdasarkan:\n1. Nominal\n2. Tanggal\n3. Kategori\nPilih: ";
-    string p; getline(cin, p);
+    cout << "\n--- Sort Pengeluaran ---\n";
 
-    cout << "Urutan (1. Ascending, 2. Descending): ";
-    string o; getline(cin, o);
-    bool asc = (o == "1");
+    string pilihSort;
 
-    // Bubble Sort
+    // -----------------------------------------
+    //       Validasi pilihan menu sort
+    // -----------------------------------------
+    while (true) {
+        cout << "Sort berdasarkan:\n";
+        cout << "1. Nominal\n";
+        cout << "2. Tanggal\n";
+        cout << "3. Kategori\n";
+        cout << "Pilih (1/2/3): ";
+        getline(cin, pilihSort);
+
+        if (pilihSort == "1" || pilihSort == "2" || pilihSort == "3") break;
+
+        cout << "✖ Pilihan tidak valid! Silakan pilih 1/2/3.\n";
+    }
+
+
+    // -----------------------------------------
+    //       Validasi ascending/descending
+    // -----------------------------------------
+    string pilihOrder;
+    bool asc = true;
+
+    while (true) {
+        cout << "Urutan:\n";
+        cout << "1. Ascending (kecil ke besar)\n";
+        cout << "2. Descending (besar ke kecil)\n";
+        cout << "Pilih (1/2): ";
+        getline(cin, pilihOrder);
+
+        if (pilihOrder == "1") { asc = true; break; }
+        if (pilihOrder == "2") { asc = false; break; }
+
+        cout << "Pilihan urutan tidak valid!\n";
+    }
+
+    //Bubble Sort
     for (int i = 0; i < jumlahData - 1; i++) {
         for (int j = 0; j < jumlahData - i - 1; j++) {
 
-            bool cond = false;
+            bool perluSwap = false;
 
-            if (p == "1") { // nominal
-                cond = asc ? (nominalArr[j] > nominalArr[j+1])
-                           : (nominalArr[j] < nominalArr[j+1]);
-            } 
-            else if (p == "2") { // tanggal
-                cond = asc ? (tanggalToKey(tanggalArr[j]) > tanggalToKey(tanggalArr[j+1]))
-                           : (tanggalToKey(tanggalArr[j]) < tanggalToKey(tanggalArr[j+1]));
-            }
-            else { // kategori
-                cond = asc ? (toLowerStr(kategoriArr[j]) > toLowerStr(kategoriArr[j+1]))
-                           : (toLowerStr(kategoriArr[j]) < toLowerStr(kategoriArr[j+1]));
+            // Sort berdasarkan Nominal
+            if (pilihSort == "1") {
+                perluSwap = asc ? (nominalArr[j] > nominalArr[j+1])
+                                : (nominalArr[j] < nominalArr[j+1]);
             }
 
-            if (cond) {
+            // Sort berdasarkan Tanggal (dd-mm-yyyy → key)
+            else if (pilihSort == "2") {
+                int key1 = tanggalToKey(tanggalArr[j]);
+                int key2 = tanggalToKey(tanggalArr[j+1]);
+                perluSwap = asc ? (key1 > key2)
+                                : (key1 < key2);
+            }
+
+            // Sort berdasarkan Kategori (case-insensitive)
+            else if (pilihSort == "3") {
+                string a = toLowerStr(kategoriArr[j]);
+                string b = toLowerStr(kategoriArr[j+1]);
+                perluSwap = asc ? (a > b)
+                                : (a < b);
+            }
+
+            // Jika memenuhi kondisi maka tukar semua field
+            if (perluSwap) {
                 swap(kategoriArr[j], kategoriArr[j+1]);
                 swap(nominalArr[j], nominalArr[j+1]);
                 swap(tanggalArr[j], tanggalArr[j+1]);
@@ -346,9 +475,12 @@ void sortPengeluaran() {
         }
     }
 
-    simpanData(); // Auto-save setelah sort
-    cout << "Sort selesai dan tersimpan!\n";
+    // Auto-save setelah sort
+    simpanData();
 
+    cout << "\nData berhasil diurutkan!\n";
+
+    //Tampilkan hasil setelah sorting
     tampilHeader();
     for (int i = 0; i < jumlahData; i++) {
         cout << setw(4) << (i+1) << " | "
@@ -357,45 +489,71 @@ void sortPengeluaran() {
              << " " << tanggalArr[i] << "\n";
     }
 }
+
 
 
 // ================== MENU 6 ===================
 void hapusPengeluaran() {
     if (jumlahData == 0) {
-        cout << "Belum ada data.\n";
+        cout << "\nBelum ada data untuk dihapus.\n";
         return;
     }
 
-    cout << "\n--- Hapus Data ---\n";
+    cout << "\n--- Hapus Pengeluaran ---\n";
     tampilHeader();
+
     for (int i = 0; i < jumlahData; i++) {
-        cout << setw(4) << (i+1) << " | "
+        cout << setw(4) << (i + 1) << " | "
              << left << setw(20) << kategoriArr[i] << " | "
              << right << setw(10) << nominalArr[i] << " | "
              << " " << tanggalArr[i] << "\n";
     }
 
-    cout << "\nHapus nomor berapa? ";
-    string s; getline(cin, s);
-    if (!validNominal(s)) return;
+    cout << "\nMasukkan nomor data yang ingin dihapus: ";
+    string input;
+    getline(cin, input);
 
-    int idx = stoi(s) - 1;
-
-    if (idx < 0 || idx >= jumlahData) {
-        cout << "Nomor tidak ada.\n";
+    // Validasi input angka
+    if (!validNominal(input)) {
+        cout << "Nomor tidak valid. Kembali ke menu utama.\n";
         return;
     }
 
+    int idx = stoi(input) - 1;
+
+    if (idx < 0 || idx >= jumlahData) {
+        cout << "Nomor tidak ada dalam data. Kembali ke menu utama.\n";
+        return;
+    }
+
+    // --- KONFIRMASI HAPUS ---
+    cout << "\nAnda yakin ingin menghapus data berikut?\n";
+    cout << kategoriArr[idx] << " | "
+         << nominalArr[idx] << " | "
+         << tanggalArr[idx] << "\n";
+    cout << "Konfirmasi (y/n): ";
+
+    string konfirmasi;
+    getline(cin, konfirmasi);
+
+    if (konfirmasi != "y" && konfirmasi != "Y") {
+        cout << "Penghapusan dibatalkan. Kembali ke menu utama.\n";
+        return;
+    }
+
+    // --- PROSES HAPUS ---
     for (int i = idx; i < jumlahData - 1; i++) {
-        kategoriArr[i] = kategoriArr[i+1];
-        nominalArr[i] = nominalArr[i+1];
-        tanggalArr[i] = tanggalArr[i+1];
+        kategoriArr[i] = kategoriArr[i + 1];
+        nominalArr[i] = nominalArr[i + 1];
+        tanggalArr[i] = tanggalArr[i + 1];
     }
 
     jumlahData--;
-    simpanData(); // Auto-save setelah hapus data
-    cout << "Data terhapus dan tersimpan!\n";
+
+    simpanData(); // auto-save
+    cout << "Data berhasil dihapus!\n";
 }
+
 
 
 // ================== MAIN ===================
